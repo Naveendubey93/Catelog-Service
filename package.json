@@ -4,6 +4,9 @@
   "description": "User management and authentication service",
   "main": "index.js",
   "scripts": {
+    "start": "cross-env NODE_ENV=dev ts-node src/server.ts",
+    "dev": "cross-env NODE_ENV=dev nodemon src/server.ts",
+    "build": "tsc",
     "format:check": "prettier . --check",
     "format:fix": "prettier . --write",
     "lint": "eslint src/**/*.ts",
@@ -14,16 +17,27 @@
   "author": "Naveen Dubey <naveen.parasi@gmail.com>",
   "license": "ISC",
   "devDependencies": {
+    "@types/config": "^3.3.5",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "@types/node": "^20.10.6",
+    "@types/uuid": "^10.0.0",
+    "@types/winston": "^2.4.4",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "cross-env": "^7.0.3",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.2",
+    "express": "^5.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",
     "prettier": "^3.1.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "uuid": "^11.1.0"
   },
   "lint-staged": {
     "*.ts": [
@@ -31,5 +45,10 @@
       "eslint",
       "prettier --list-different"
     ]
+  },
+  "dependencies": {
+    "config": "^4.0.0",
+    "js-yaml": "^4.1.0",
+    "reflect-metadata": "^0.2.2"
   }
 }
