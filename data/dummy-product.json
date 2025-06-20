@@ -1,0 +1,18 @@
+{
+  "Size": {
+    "priceType": "base",
+    "availableOptions": {
+      "Small": 400,
+      "Medium": 600,
+      "Large": 800
+    }
+  },
+  "Crust": {
+    "priceType": "additional",
+    "availableOptions": {
+      "Thin": 100,
+      "Thick": 150,
+      "Stuffed": 200
+    }
+  }
+}

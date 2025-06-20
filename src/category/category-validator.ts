@@ -5,11 +5,12 @@ export default [
   body('priceConfiguration.*.priceType')
     .exists()
     .withMessage('Price type is required')
-    .custom((value: 'base' | 'additional') => {
-      const validKeys = ['base', 'additional'];
+    .custom((value: 'base' | 'aditional') => {
+      const validKeys = ['base', 'aditional'];
       if (!validKeys.includes(value)) {
         throw new Error(`${value} is invalid attribute for priceType field. Possible field are: [${validKeys.join(', ')}]`);
       }
+      return true;
     }),
   body('attributes').exists().withMessage('Attributes field is required'),
 ];

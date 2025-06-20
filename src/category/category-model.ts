@@ -1,27 +1,8 @@
 import mongoose from 'mongoose';
-
-interface PriceConfiguration {
-  [key: string]: {
-    priceType: 'base' | 'additional';
-    availableOptions: string[];
-  };
-}
-
-interface Attribute {
-  name: string;
-  widgetType: 'switch' | 'dropdown' | 'text';
-  defaultValue: string;
-  availableOptions?: string[];
-}
-
-export interface Category {
-  name: string;
-  priceConfiguration: PriceConfiguration;
-  attributes: Attribute;
-}
+import { Attribute, Category, PriceConfiguration } from './category-types';
 
 const priceConfigurationSchema = new mongoose.Schema<PriceConfiguration>({
-  priceType: { type: String, enum: ['base', 'additional'], required: true },
+  priceType: { type: String, enum: ['base', 'aditional'], required: true },
   availableOptions: { type: [String], required: true },
 });
 
@@ -32,20 +13,23 @@ const attributeSchema = new mongoose.Schema<Attribute>({
   availableOptions: { type: [String], required: false },
 });
 
-const categorySchema = new mongoose.Schema<Category>({
-  name: { type: String, required: true },
-  priceConfiguration: {
-    type: Map,
-    of: priceConfigurationSchema,
-    required: true,
-  },
-  attributes: [
-    {
-      type: [attributeSchema],
+const categorySchema = new mongoose.Schema<Category>(
+  {
+    name: { type: String, required: true },
+    priceConfiguration: {
+      type: Map,
+      of: priceConfigurationSchema,
       required: true,
     },
-  ],
-});
+    attributes: [
+      {
+        type: [attributeSchema],
+        required: true,
+      },
+    ],
+  },
+  { timestamps: true },
+);
 export default mongoose.model<Category>('Category', categorySchema);
 // export const CategoryModel = mongoose.model<Category>('Category', categorySchema);
 
