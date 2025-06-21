@@ -7,6 +7,7 @@ import { Logger } from 'winston';
 import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadedFile } from 'express-fileupload';
+import { AuthRequest } from '../common/types';
 export class ProductController {
   constructor(
     private readonly productService: ProductService,
@@ -61,17 +62,23 @@ export class ProductController {
   //   res.json(categories);
   // }
 
-  async getById(req: Request, res: Response, next: NextFunction) {
+  async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     if (!id) {
-      return next(createHttpError(400, 'Category ID is required'));
+      return next(createHttpError(400, 'Product ID is required'));
     }
-    const category = await this.productService.getById(id);
-    if (!category) {
-      return next(createHttpError(404, 'Category not found'));
+    const product = await this.productService.getProduct(id);
+    if (!product) {
+      return next(createHttpError(404, 'Product not found'));
     }
-    this.logger.info('fetched category by id', { id: category._id });
-    res.json(category);
+    const tenantId = (req as AuthRequest).auth.tenant;
+    if ((req as AuthRequest).auth.role !== 'admin') {
+      if (product?.tenantId !== tenantId) {
+        return next(createHttpError(403, 'Access denied to this product'));
+      }
+    }
+    this.logger.info('fetched Product by id', { id });
+    res.json(product);
   }
 
   update = async (req: Request, res: Response, next: NextFunction) => {
@@ -84,9 +91,21 @@ export class ProductController {
       return next(createHttpError(400, result.array()[0].msg as string));
     }
 
+    const Product = await this.productService.getProduct(productId);
+    if (!Product) {
+      return next(createHttpError(404, 'Product not found'));
+    }
+
+    const TenantId = (req as AuthRequest).auth.tenant;
+    if ((req as AuthRequest).auth.role !== 'admin') {
+      if (Product.tenantId !== TenantId) {
+        return next(createHttpError(403, 'Access denied to this product'));
+      }
+    }
+
     let imageName = null; // Initialize imageName to null
     if (req.files?.image) {
-      const oldImage = await this.productService.getProductImage(productId);
+      const oldImage = Product.image; // Store the old image name to delete it later
       const image = req.files.image as UploadedFile;
       imageName = uuidv4(); // Generate a unique name for the image
       await this.storage.upload({

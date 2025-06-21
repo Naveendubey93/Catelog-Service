@@ -15,6 +15,10 @@ export class ProductService {
     return productModel.findById(id);
   }
 
+  async getProduct(productId: string): Promise<Product | null> {
+    return await productModel.findOne({ _id: productId });
+  }
+
   async getProductImage(id: string) {
     const product = await productModel.findById(id);
     if (!product) {

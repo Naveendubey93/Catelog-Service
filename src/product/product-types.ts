@@ -14,6 +14,11 @@ export interface Attribute {
 
 export interface Product {
   name: string;
+  description: string;
+  tenantId: string;
+  categoryId: string;
+  image?: string; // Optional, if you are using file uploads
+  isPublish: boolean;
   priceConfiguration: PriceConfiguration;
   attributes: Attribute;
 }
