@@ -1,6 +1,6 @@
 import config from 'config';
 import { FileData, FileStorage } from '../types/storage';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 export class S3Storage implements FileStorage {
   private readonly client: S3Client;
@@ -26,8 +26,14 @@ export class S3Storage implements FileStorage {
     this.client.send(new PutObjectCommand(objectParams));
   }
 
-  delete(fileName: string): string {
-    return fileName;
+  async delete(fileName: string): Promise<void> {
+    const objectParams = {
+      Bucket: config.get('s3.bucketName'),
+      Key: fileName,
+    };
+
+    //  @ts-expect-error  @ts-ignore
+    await this.client.send(new DeleteObjectCommand(objectParams));
   }
 
   getObjectUrl(fileName: string): string {

@@ -1,6 +1,6 @@
 import { ProductController } from './product-controller';
 import express from 'express';
-import productValidator from './product-validator';
+import productValidator from './productupdate-validator';
 import { ProductService } from './product-service';
 import logger from '../config/logger';
 import { asyncWrapper } from '../utils/wrapper';
@@ -32,7 +32,21 @@ router.post(
   productValidator,
   asyncWrapper(productController.create),
 );
-// router.put('/', authenticate, canAccess([Roles.ADMIN]), categoryValidator, asyncWrapper(categoryController.create));
+router.put(
+  '/:productId',
+  authenticate,
+  canAccess([Roles.ADMIN, Roles.MANAGER]),
+  fileUpload({
+    limits: { fileSize: 500 * 1000 } /* 500 kb */,
+    abortOnLimit: true,
+    limitHandler: (req, res, next) => {
+      const error = createHttpError(400, 'File size limit exceeded');
+      next(error);
+    },
+  }),
+  productValidator,
+  asyncWrapper(productController.update),
+);
 // router.get('/', asyncWrapper(ProductController.getAll));
 // router.get('/:id', asyncWrapper(ProductController.getById));
 // router.put('/:id', authenticate, canAccess([Roles.ADMIN]), productValidator, asyncWrapper(ProductController.update));

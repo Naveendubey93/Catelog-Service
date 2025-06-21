@@ -12,12 +12,7 @@ export class ProductController {
     private readonly productService: ProductService,
     private readonly logger: Logger,
     private readonly storage: FileStorage,
-  ) {
-    // this.create = this.create.bind(this);
-    // this.getAll = this.getAll.bind(this);
-    this.getById = this.getById.bind(this);
-    this.update = this.update.bind(this);
-  }
+  ) {}
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     const result = validationResult(req);
@@ -79,27 +74,50 @@ export class ProductController {
     res.json(category);
   }
 
-  async update(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-    if (!id) {
-      return next(createHttpError(400, 'Category ID is required'));
+  update = async (req: Request, res: Response, next: NextFunction) => {
+    const { productId } = req.params;
+    if (!productId) {
+      return next(createHttpError(400, 'Product ID is required'));
     }
     const result = validationResult(req);
     if (!result.isEmpty()) {
       return next(createHttpError(400, result.array()[0].msg as string));
     }
-    const { name, priceConfiguration, attributes } = req.body as Product;
-    const category = await this.productService.update(id, {
-      name,
-      priceConfiguration,
-      attributes,
-    });
-    if (!category) {
-      return next(createHttpError(404, 'Category not found'));
+
+    let imageName = null; // Initialize imageName to null
+    if (req.files?.image) {
+      const oldImage = await this.productService.getProductImage(productId);
+      const image = req.files.image as UploadedFile;
+      imageName = uuidv4(); // Generate a unique name for the image
+      await this.storage.upload({
+        fileName: imageName,
+        fileData: image.data.buffer,
+      });
+      // Delete the old image from storage
+      if (oldImage) {
+        this.storage.delete(oldImage);
+      }
+      req.body.image = imageName; // Update the image name in the request body
     }
-    this.logger.info('updated category', { id: category._id });
-    res.json({ id: category._id });
-  }
+    const { name, description, priceConfiguration, attributes, tenantId, categoryId, isPublish } = req.body;
+    const products = {
+      name,
+      description,
+      priceConfiguration: JSON.parse(priceConfiguration), // Assuming priceConfiguration is a JSON string
+      attributes: JSON.parse(attributes), // Assuming attributes is a JSON string
+      tenantId,
+      categoryId,
+      isPublish, // req.file ? req.file.filename : null, // Assuming you are using multer for file uploads  req.body.image
+      ...(imageName && { image: imageName }),
+    };
+
+    const product = await this.productService.updateProduct(productId, products);
+    if (!products) {
+      return next(createHttpError(404, 'Products not found'));
+    }
+    this.logger.info('updated Products', { id: product?._id });
+    res.json({ id: productId });
+  };
 
   async delete(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
