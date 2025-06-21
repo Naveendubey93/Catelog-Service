@@ -6,11 +6,11 @@ export default [
   body('attributes').exists().withMessage('Attributes field is required'),
   body('tenantId').exists().withMessage('Tenant id field is required'),
   body('categoryId').exists().withMessage('Tenant id field is required'),
-  body('image')
-    .custom((value, { req }) => {
-      if (!value && !req.file) {
-        throw new Error('Product Image is required');
-      }
-    })
-    .withMessage('Image id field is required'),
+  // body('image')
+  //   .custom((value, { req }) => {
+  //     if (!value && !req.file) {
+  //       throw new Error('Product Image is required');
+  //     }
+  //   })
+  //   .withMessage('Image id field is required'),
 ];

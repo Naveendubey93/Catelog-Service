@@ -1,5 +1,5 @@
 import { ProductController } from './product-controller';
-import express, { Request, Response, NextFunction } from 'express';
+import express from 'express';
 import productValidator from './product-validator';
 import { ProductService } from './product-service';
 import logger from '../config/logger';
@@ -7,13 +7,31 @@ import { asyncWrapper } from '../utils/wrapper';
 import authenticate from '../common/middlewares/authenticate';
 import { canAccess } from '../common/middlewares/canAccess';
 import { Roles } from '../common/constants';
+import fileUpload from 'express-fileupload';
+import { S3Storage } from '../common/services/s3Services';
+import createHttpError from 'http-errors';
 const router = express.Router();
 
 const productService = new ProductService();
-const productController = new ProductController(productService, logger);
-router.post('/', productValidator, (req: Request, res: Response, next: NextFunction) => productController.create(req, res, next));
+const storageService = new S3Storage();
+const productController = new ProductController(productService, logger, storageService);
+// router.post('/', productValidator, (req: Request, res: Response, next: NextFunction) => productController.create(req, res, next));
 
-router.post('/', authenticate, canAccess([Roles.ADMIN]), productValidator, asyncWrapper(productController.create));
+router.post(
+  '/',
+  authenticate,
+  canAccess([Roles.ADMIN, Roles.MANAGER]),
+  fileUpload({
+    limits: { fileSize: 500 * 1000 } /* 500 kb */,
+    abortOnLimit: true,
+    limitHandler: (req, res, next) => {
+      const error = createHttpError(400, 'File size limit exceeded');
+      next(error);
+    },
+  }),
+  productValidator,
+  asyncWrapper(productController.create),
+);
 // router.put('/', authenticate, canAccess([Roles.ADMIN]), categoryValidator, asyncWrapper(categoryController.create));
 // router.get('/', asyncWrapper(ProductController.getAll));
 // router.get('/:id', asyncWrapper(ProductController.getById));

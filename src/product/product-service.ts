@@ -1,11 +1,9 @@
-import categoryModel from './product-model';
+import productModel from './product-model';
 import { Product } from './product-types';
 
 export class ProductService {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async create(category: Product) {
-    const newCategory = new categoryModel(category);
-    return newCategory.save();
+  async createProduct(product: Product) {
+    return productModel.create(product);
   }
 
   // async getAll(): Promise<Product[]> {
@@ -14,11 +12,11 @@ export class ProductService {
   // }
 
   async getById(id: string) {
-    return categoryModel.findById(id).lean();
+    return productModel.findById(id).lean();
   }
 
   async update(id: string, category: Product) {
-    return categoryModel
+    return productModel
       .findByIdAndUpdate(id, category, {
         new: true,
         runValidators: true,
@@ -27,6 +25,6 @@ export class ProductService {
   }
 
   async delete(id: string) {
-    return categoryModel.findByIdAndDelete(id).lean();
+    return productModel.findByIdAndDelete(id).lean();
   }
 }
