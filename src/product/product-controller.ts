@@ -1,13 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
-import { Product } from './product-types';
+import { Filter, Product } from './product-types';
 import { ProductService } from './product-service';
 import { Logger } from 'winston';
 import { FileStorage } from '../common/types/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { UploadedFile } from 'express-fileupload';
 import { AuthRequest } from '../common/types';
+import mongoose from 'mongoose';
 export class ProductController {
   constructor(
     private readonly productService: ProductService,
@@ -56,11 +57,11 @@ export class ProductController {
     res.json({ id: newProduct._id });
   };
 
-  // async getAll(req: Request, res: Response) {
-  //   const categories = await this.productService.getAll();
-  //   this.logger.info('fetched all categories');
-  //   res.json(categories);
-  // }
+  async getAll(req: Request, res: Response) {
+    const categories = await this.productService.getAll();
+    this.logger.info('fetched all categories');
+    res.json(categories);
+  }
 
   async getProduct(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
@@ -150,4 +151,25 @@ export class ProductController {
     this.logger.info('deleted category', { id: category._id });
     res.json({ id: category._id });
   }
+
+  index = async (req: Request, res: Response) => {
+    const { q, tenantId, categoryId, isPublish } = req.query;
+    const filters: Filter = {};
+
+    if (isPublish === 'true') {
+      filters.isPublish = true;
+    }
+
+    if (tenantId) {
+      filters.tenantId = tenantId as string;
+    }
+
+    if (categoryId && mongoose.Types.ObjectId.isValid(categoryId as string)) {
+      filters.categoryId = new mongoose.Types.ObjectId(categoryId as string);
+    }
+
+    const products = await this.productService.getProducts(q as string, filters);
+    // const filteredProducts = products.filter((product) => product.tenantId === tenantId);
+    res.json(products);
+  };
 }

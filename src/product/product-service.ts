@@ -1,15 +1,15 @@
 import productModel from './product-model';
-import { Product } from './product-types';
+import { Filter, Product } from './product-types';
 
 export class ProductService {
   async createProduct(product: Product) {
     return productModel.create(product);
   }
 
-  // async getAll(): Promise<Product[]> {
-  //   const categories = await categoryModel.find().lean();
-  //   return categories || [];
-  // }
+  async getAll() {
+    const categories = await productModel.find().lean();
+    return categories;
+  }
 
   async getById(id: string) {
     return productModel.findById(id);
@@ -17,6 +17,42 @@ export class ProductService {
 
   async getProduct(productId: string): Promise<Product | null> {
     return await productModel.findOne({ _id: productId });
+  }
+
+  async getProducts(q: string, filters: Filter): Promise<Product[] | null> {
+    const searchQueryRegexp = new RegExp(q, 'i');
+    const filterQuery = {
+      ...filters,
+      name: searchQueryRegexp,
+    };
+    const aggregate = productModel.aggregate([
+      {
+        $match: filterQuery,
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'category',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                name: 1,
+                attributes: 1,
+                priceConfiguration: 1,
+              },
+            },
+          ],
+        },
+      },
+      { $unwind: '$category' },
+    ]);
+
+    const result = aggregate.exec();
+    return result as unknown as Product[] | null;
+    // return await productModel.findOne({ _id: productId });
   }
 
   async getProductImage(id: string) {

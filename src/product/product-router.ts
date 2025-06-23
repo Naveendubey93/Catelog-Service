@@ -47,7 +47,9 @@ router.put(
   productValidator,
   asyncWrapper(productController.update),
 );
-// router.get('/', asyncWrapper(ProductController.getAll));
+router.get('/', asyncWrapper(productController.index));
+
+router.get('/all', authenticate, asyncWrapper(productController.getAll.bind(productController)));
 router.get('/:id', authenticate, asyncWrapper(productController.getProduct.bind(productController)));
 // router.put('/:id', authenticate, canAccess([Roles.ADMIN]), productValidator, asyncWrapper(ProductController.update));
 // router.delete('/:id', authenticate, canAccess([Roles.ADMIN]), asyncWrapper(categoryController.delete));

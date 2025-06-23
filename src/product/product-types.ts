@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+
 export interface PriceConfiguration {
   [key: string]: {
     priceType: 'base' | 'aditional';
@@ -21,4 +23,10 @@ export interface Product {
   isPublish: boolean;
   priceConfiguration: PriceConfiguration;
   attributes: Attribute;
+}
+
+export interface Filter {
+  tenantId?: string;
+  categoryId?: mongoose.Types.ObjectId;
+  isPublish?: boolean;
 }
