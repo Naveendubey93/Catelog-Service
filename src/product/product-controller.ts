@@ -148,8 +148,8 @@ export class ProductController {
     if (!category) {
       return next(createHttpError(404, 'Category not found'));
     }
-    this.logger.info('deleted category', { id: category._id });
-    res.json({ id: category._id });
+    this.logger.info('deleted category', { id });
+    res.json({ id });
   }
 
   index = async (req: Request, res: Response) => {
@@ -168,7 +168,10 @@ export class ProductController {
       filters.categoryId = new mongoose.Types.ObjectId(categoryId as string);
     }
 
-    const products = await this.productService.getProducts(q as string, filters);
+    const products = await this.productService.getProducts(q as string, filters, {
+      page: req.query.page ? parseInt(req.query.page as string, 10) : 1,
+      limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
+    });
     // const filteredProducts = products.filter((product) => product.tenantId === tenantId);
     res.json(products);
   };

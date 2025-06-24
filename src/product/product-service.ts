@@ -1,5 +1,6 @@
+import { paginationLabels } from '../config/pagination';
 import productModel from './product-model';
-import { Filter, Product } from './product-types';
+import { Filter, PaginateQuery, Product } from './product-types';
 
 export class ProductService {
   async createProduct(product: Product) {
@@ -15,11 +16,14 @@ export class ProductService {
     return productModel.findById(id);
   }
 
-  async getProduct(productId: string): Promise<Product | null> {
+  async getProduct(productId: string) {
     return await productModel.findOne({ _id: productId });
   }
 
-  async getProducts(q: string, filters: Filter): Promise<Product[] | null> {
+  // Import the type if available, or use 'any' as a fallback
+  // import { AggregatePaginateResult } from 'mongoose'; // Uncomment if you have this type
+
+  async getProducts(q: string, filters: Filter, paginateQuery: PaginateQuery) {
     const searchQueryRegexp = new RegExp(q, 'i');
     const filterQuery = {
       ...filters,
@@ -50,9 +54,8 @@ export class ProductService {
       { $unwind: '$category' },
     ]);
 
-    const result = aggregate.exec();
-    return result as unknown as Product[] | null;
-    // return await productModel.findOne({ _id: productId });
+    // The result is a paginated object, not a Product[]
+    return productModel.aggregatePaginate(aggregate, { ...paginateQuery, customLabels: paginationLabels });
   }
 
   async getProductImage(id: string) {
