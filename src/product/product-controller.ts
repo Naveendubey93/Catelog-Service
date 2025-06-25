@@ -173,6 +173,19 @@ export class ProductController {
       limit: req.query.limit ? parseInt(req.query.limit as string, 10) : 10,
     });
     // const filteredProducts = products.filter((product) => product.tenantId === tenantId);
-    res.json(products);
+    const dataArray = Array.isArray(products?.data) ? products.data : [];
+    const finalProducts = dataArray.map((product: Product) => {
+      return {
+        ...product,
+        image: product.image ? this.storage.getObjectUrl(product.image) : null, // Assuming getObjectUrl is a method in FileStorage
+      };
+    });
+    products.data = finalProducts;
+    res.json({
+      data: finalProducts,
+      total: products.total,
+      page: products.limit,
+      limit: products.page,
+    });
   };
 }
